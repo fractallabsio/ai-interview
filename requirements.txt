@@ -1,2 +1,6 @@
-google-genai
+anthropic
+pydantic>=2
 python-dotenv
+fastapi
+uvicorn
+pytest

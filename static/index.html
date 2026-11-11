@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brightcart Support</title>
+<style>
+  :root { --bg:#f6f7f9; --panel:#fff; --text:#1c2128; --muted:#6a737d; --user:#2f6fde; --border:#e1e4e8; --chip:#eef2f7; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --panel:#181b21; --text:#e6e8eb; --muted:#9aa3ad; --user:#3b7cf0; --border:#2a2f37; --chip:#232831; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  main { max-width:760px; margin:0 auto; height:100vh; display:flex; flex-direction:column; padding:16px; }
+  h1 { font-size:18px; margin:0 0 12px; }
+  #log { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:12px; padding:4px; }
+  .msg { max-width:85%; padding:10px 14px; border-radius:14px; white-space:pre-wrap; }
+  .user { align-self:flex-end; background:var(--user); color:#fff; }
+  .bot { align-self:flex-start; background:var(--panel); border:1px solid var(--border); }
+  .meta { font-size:12px; color:var(--muted); margin-top:6px; }
+  .cite { display:inline-block; background:var(--chip); border-radius:6px; padding:0 5px; font-size:12px; }
+  .err { color:#d73a49; }
+  form { display:flex; gap:8px; margin-top:12px; }
+  input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--panel); color:var(--text); font:inherit; }
+  button { padding:10px 16px; border:0; border-radius:10px; background:var(--user); color:#fff; font:inherit; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  .samples { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .samples button { background:var(--chip); color:var(--text); font-size:13px; padding:4px 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Brightcart Support</h1>
+  <div id="log"></div>
+  <div class="samples" id="samples"></div>
+  <form id="f"><input id="q" placeholder="Ask about an order, refunds, shipping…" autocomplete="off" autofocus><button id="send">Send</button></form>
+</main>
+<script>
+  const log = document.getElementById('log'), q = document.getElementById('q'), send = document.getElementById('send');
+  let sessionId = null;
+  const samples = ["What's your return policy?", "Where is my order A1002?", "I want a refund for A1001, the earbuds stopped working.", "Refund A1003 please.", "I need a refund for A1004.", "How long does shipping take?"];
+  for (const s of samples) { const b = document.createElement('button'); b.type = 'button'; b.textContent = s; b.onclick = () => ask(s); document.getElementById('samples').appendChild(b); }
+
+  function add(cls, text) { const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+  function renderReply(d, r) {
+    d.textContent = '';
+    for (const part of r.reply.split(/(\[[A-Z]+-[A-Za-z0-9-]+\])/)) {
+      if (/^\[[A-Z]+-[A-Za-z0-9-]+\]$/.test(part)) { const c = document.createElement('span'); c.className = 'cite'; c.textContent = part.slice(1, -1); d.appendChild(c); }
+      else d.appendChild(document.createTextNode(part));
+    }
+    const m = document.createElement('div'); m.className = 'meta';
+    m.textContent = `${r.route === 'faq_direct' ? 'BM25 direct' : 'LLM'} · ${r.route_reason} · ${r.llm_calls} LLM call(s) · memory ${r.memory_tokens}/${r.memory_budget} tokens`;
+    d.appendChild(m);
+  }
+  async function ask(text) {
+    if (!text.trim()) return;
+    add('user', text); q.value = ''; send.disabled = true;
+    const d = add('bot', '…');
+    try {
+      const res = await fetch('/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, session_id: sessionId }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.detail || res.statusText);
+      sessionId = body.session_id; renderReply(d, body);
+    } catch (e) { d.textContent = 'Error: ' + e.message; d.classList.add('err'); }
+    send.disabled = false; q.focus();
+  }
+  document.getElementById('f').onsubmit = e => { e.preventDefault(); ask(q.value); };
+</script>
+</body>
+</html>

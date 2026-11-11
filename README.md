@@ -4,7 +4,7 @@ You have about 28 minutes to build, then we'll test it together for a few minute
 
 ## The setup
 
-Brightcart is an online electronics store. Customers chat with a support assistant. This project already has a chat loop, a working Gemini call, and a fake backend (`store.py`) with orders, an FAQ, refunds, and support tickets.
+Brightcart is an online electronics store. Customers chat with a support assistant. This project already has a chat loop, a working Claude call, and a fake backend (`store.py`) with orders, an FAQ, refunds, and support tickets.
 
 Right now the assistant can chat but can't look anything up. Make it a real support agent.
 
@@ -20,17 +20,16 @@ python main.py
 
 Type `hi` and you should get a reply.
 
-Don't type real personal information into the chat. Requests on the free tier may be used by Google to improve its products.
 
 ## Files
 
 | File               | What it is                                        | Change it?                  |
 | ------------------ | ------------------------------------------------- | --------------------------- |
-| `agent.py`         | The agent, with a working Gemini call and TODOs   | Yes, this is where you work |
+| `agent.py`         | The agent, with a working Claude call and TODOs   | Yes, this is where you work |
 | `main.py`          | Terminal chat loop                                | Only if you want to         |
 | `store.py`         | Fake store backend: orders, FAQ, refunds, tickets | No (read it)                |
 | `data/store.json`  | The data `store.py` loads                         | No                          |
-| `requirements.txt` | `google-genai` and `python-dotenv`                | Add to it if you need to    |
+| `requirements.txt` | `anthropic` and `python-dotenv`                | Add to it if you need to    |
 | `.env.example`     | Copy it to `.env` and paste in the API key        | No                          |
 
 ## What the agent should do

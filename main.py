@@ -24,7 +24,10 @@ def main() -> None:
         if user == "tickets":
             print(store.list_tickets())
             continue
-        print(f"agent> {agent.respond(user)}\n")
+        reply = agent.respond(user)
+        route = agent.last_route
+        print(f"agent> {reply}")
+        print(f"       [route: {route.kind} - {route.reason} | llm calls: {agent.last_llm_calls}]\n")
 
 
 if __name__ == "__main__":
